@@ -8,6 +8,7 @@ from dateutil import parser
 from pysurvey.plot import setup, dateticks, minmax
 from matplotlib.dates import date2num
 import matplotlib.ticker
+from datetime import timedelta, datetime
 
 FILENAME = os.path.expanduser('~/.temperature.neon.log')
 
@@ -54,20 +55,47 @@ def setupplot(secondax=False, **kwargs):
     return ax
 
 
+def get_continuum(dates, x, y, delta=10):
+    out = []
+    t = timedelta(hours=delta)
+    for d in dates:
+        ii = np.where( (date2num(x) >  date2num(d-t) ) &
+                       (date2num(x) <= date2num(d+t) ) )[0]
+        if len(ii) <= 0:
+            out.append(-1)
+        else:
+            out.append( np.mean(y[ii]) )
+    
+    # print out
+    # raise ValueError()
+    return np.array(out)
+    
+
+
 def plot_temp():
     data = read_temps()
-    dates, values = zip(*[(d['date'], d['temperature'])
-                          for d in data])
+    dates, values = map(np.array, zip(*[(d['date'], d['temperature'])
+                                        for d in data]))
+    tmp = (date2num(dates) % 1.0)*24.0
+    ii = np.where((tmp > 0) & (tmp < 6))[0]
+    continuum = get_continuum(dates, dates[ii], values[ii])
+    
+    
     setup(figsize=(12,6))
     
     setupplot(subplt=(1,2,1), autoticks=True, xlabel='Date',)
     pylab.plot(dates, values)
+    pylab.plot(dates[ii], values[ii], '.r')
+    pylab.plot(dates, continuum, '.k')
+    # pylab.plot(dates, values-continuum+38, '.r')
     dateticks('%Y.%m.%d')
     
-    tmp = (date2num(dates) % 1.0)*24.0
+    
     setupplot(subplt=(1,2,2), autoticks=True, xlabel='Hour of Day')
     pylab.plot(tmp, values, '.')
+    pylab.plot(tmp, values-continuum+38, '.')
     setupplot(subplt=(1,2,2), ylabel='', secondax=True)
+    
     
     
     pylab.show()
@@ -75,4 +103,6 @@ def plot_temp():
 
 
 if __name__ == '__main__':
+    from pysurvey import util
+    util.setup_stop()
     plot_temp()
