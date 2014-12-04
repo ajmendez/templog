@@ -35,15 +35,18 @@ except:
     data = {}
 
 try:
-    for i in range(1,8):
+    for i in range(1,300):
         print i
         d = '{0.year}{0.month:02d}{0.day:02d}'.format(date-timedelta(days=i))
         tmp = get_weather(d)
         for obs in tmp['history']['observations']:
             k = d+obs['date']['hour']+obs['date']['min']
+            print '  ',datetime.strptime(k, '%Y%m%d%H%M')
             k = date2num(datetime.strptime(k, '%Y%m%d%H%M'))
+            
             if k in data:
-                raise ValueError('Already observed data')
+                if d not in ['20141102']:
+                    raise ValueError('Already observed data')
             data[k] = obs
 except Exception as e:
     print 'is Done?'

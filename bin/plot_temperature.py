@@ -86,14 +86,14 @@ def get_continuum(dates, x, y, delta=2):
     f = interpolate.interp1d(date2num(dates[ii]), tmp[ii], bounds_error=False)
     return f(date2num(dates))
     
-def plot_weather():
+def plot_weather(mindate):
     weatherfile = os.path.expanduser('~/data/weather.json')
     wf = json.load(open(weatherfile,'r'))
     keys = sorted(wf.keys())
     x = np.array(map(np.float, keys))
     y = np.array(map(np.float, [wf[k]['tempm'] for k in keys]))+50
-    
-    pylab.plot(x,y)
+    ii = np.where(x > mindate)
+    pylab.plot(x[ii],y[ii])
 
 
 def plot_temp():
@@ -111,7 +111,7 @@ def plot_temp():
     pylab.plot(dates, values)
     pylab.plot(dates[ii], values[ii], '.r')
     pylab.plot(dates, continuum, '.k')
-    plot_weather()
+    plot_weather(np.min(date2num(dates)))
     # pylab.plot(dates, values-continuum+38, '.r')
     dateticks('%Y.%m.%d')
     
