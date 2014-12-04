@@ -2,13 +2,16 @@
 
 import os
 import sys
+import json
 import pylab
 import numpy as np
-from dateutil import parser
-from pysurvey.plot import setup, dateticks, minmax
-from matplotlib.dates import date2num
 import matplotlib.ticker
+from dateutil import parser
+from scipy import interpolate
+from matplotlib.dates import date2num
 from datetime import timedelta, datetime
+from pysurvey.plot import setup, dateticks, minmax, hcolorbar
+
 
 FILENAME = os.path.expanduser('~/.temperature.neon.log')
 
@@ -55,21 +58,42 @@ def setupplot(secondax=False, **kwargs):
     return ax
 
 
-def get_continuum(dates, x, y, delta=10):
+def get_continuum(dates, x, y, delta=2):
     out = []
     t = timedelta(hours=delta)
     for d in dates:
         ii = np.where( (date2num(x) >  date2num(d-t) ) &
                        (date2num(x) <= date2num(d+t) ) )[0]
-        if len(ii) <= 0:
+        if len(ii) <= 20:
             out.append(-1)
         else:
             out.append( np.mean(y[ii]) )
     
+    
+    t = date2num(dates)
+    n = np.min(t)
+    tmp = np.array(out)
+    ii = np.where(tmp > 0)
+    f = interpolate.UnivariateSpline(date2num(dates[ii])-n,tmp[ii], s=4)
+    return f(t-n)
+    
+    
     # print out
     # raise ValueError()
-    return np.array(out)
+    tmp = np.array(out)
+    ii = np.where(tmp > 0)
     
+    f = interpolate.interp1d(date2num(dates[ii]), tmp[ii], bounds_error=False)
+    return f(date2num(dates))
+    
+def plot_weather():
+    weatherfile = os.path.expanduser('~/data/weather.json')
+    wf = json.load(open(weatherfile,'r'))
+    keys = sorted(wf.keys())
+    x = np.array(map(np.float, keys))
+    y = np.array(map(np.float, [wf[k]['tempm'] for k in keys]))+50
+    
+    pylab.plot(x,y)
 
 
 def plot_temp():
@@ -77,7 +101,7 @@ def plot_temp():
     dates, values = map(np.array, zip(*[(d['date'], d['temperature'])
                                         for d in data]))
     tmp = (date2num(dates) % 1.0)*24.0
-    ii = np.where((tmp > 0) & (tmp < 6))[0]
+    ii = np.where((tmp > 0) & (tmp < 8))[0]
     continuum = get_continuum(dates, dates[ii], values[ii])
     
     
@@ -87,17 +111,25 @@ def plot_temp():
     pylab.plot(dates, values)
     pylab.plot(dates[ii], values[ii], '.r')
     pylab.plot(dates, continuum, '.k')
+    plot_weather()
     # pylab.plot(dates, values-continuum+38, '.r')
     dateticks('%Y.%m.%d')
     
     
-    setupplot(subplt=(1,2,2), autoticks=True, xlabel='Hour of Day')
+    setupplot(subplt=(2,2,2), autoticks=False, xlabel='Hour of Day')
     pylab.plot(tmp, values, '.')
-    pylab.plot(tmp, values-continuum+38, '.')
-    setupplot(subplt=(1,2,2), ylabel='', secondax=True)
+    setupplot(subplt=(2,2,2), ylabel='', secondax=True)
     
+    setupplot(subplt=(2,2,4), autoticks=False, xlabel='Hour of Day')
+    sc = pylab.scatter(tmp, values-continuum+38, 
+                       c=date2num(dates)-np.min(date2num(dates)), s=15,
+                       marker='.', edgecolor='none',
+                       label='Days since Start')
     
+    setupplot(subplt=(2,2,4), ylabel='', secondax=True)
+    hcolorbar(sc, axes=[0.75, 0.42, 0.1, 0.01])
     
+    pylab.tight_layout()
     pylab.show()
 
 
