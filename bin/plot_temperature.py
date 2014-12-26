@@ -14,6 +14,10 @@ from pysurvey.plot import setup, dateticks, minmax, hcolorbar
 
 
 FILENAME = os.path.expanduser('~/.temperature.neon.log')
+SEP = ' : '
+
+FILENAME = os.path.expanduser('~/.temperature.xenon.log')
+SEP = ' | '
 
 
 def read_temps(filename=FILENAME):
@@ -21,7 +25,7 @@ def read_temps(filename=FILENAME):
     with open(filename, 'r') as f:
         lines = f.readlines()
         for line in lines:
-            items = line.split(' : ')
+            items = line.split(SEP)
             out.append(dict(date=parser.parse(items[1]),
                             temperature=float(items[2])/1000.0))
     return out
