@@ -15,10 +15,11 @@ from pysurvey.plot import setup, dateticks, minmax, hcolorbar
 
 FILENAME = os.path.expanduser('~/.temperature.neon.log')
 SEP = ' : '
+YR = [30,75]
 
 FILENAME = os.path.expanduser('~/.temperature.xenon.log')
 SEP = ' | '
-
+YR = [15,60]
 
 def read_temps(filename=FILENAME):
     out = []
@@ -32,7 +33,7 @@ def read_temps(filename=FILENAME):
 
 
 def setupplot(secondax=False, **kwargs):
-    ytickv = np.linspace(20,75,6)
+    ytickv = np.linspace(YR[0],YR[1],6)
     yticknames = map('{:0.0f}'.format, ytickv)
     tmp = dict(
         ylabel='Temperature [c]',
