@@ -32,7 +32,7 @@ def read_temps(filename=FILENAME):
 
 
 def setupplot(secondax=False, **kwargs):
-    ytickv = np.linspace(30,75,6)
+    ytickv = np.linspace(20,75,6)
     yticknames = map('{:0.0f}'.format, ytickv)
     tmp = dict(
         ylabel='Temperature [c]',
