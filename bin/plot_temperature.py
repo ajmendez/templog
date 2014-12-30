@@ -16,10 +16,12 @@ from pysurvey.plot import setup, dateticks, minmax, hcolorbar
 FILENAME = os.path.expanduser('~/.temperature.neon.log')
 SEP = ' : '
 YR = [30,75]
+TNORM = 38
 
 FILENAME = os.path.expanduser('~/.temperature.xenon.log')
 SEP = ' | '
 YR = [15,60]
+TNORM = 25
 
 def read_temps(filename=FILENAME):
     out = []
@@ -126,7 +128,7 @@ def plot_temp():
     setupplot(subplt=(2,2,2), ylabel='', secondax=True)
     
     setupplot(subplt=(2,2,4), autoticks=False, xlabel='Hour of Day')
-    sc = pylab.scatter(tmp, values-continuum+38, 
+    sc = pylab.scatter(tmp, values-continuum+TNORM, 
                        c=date2num(dates)-np.min(date2num(dates)), s=15,
                        marker='.', edgecolor='none',
                        label='Days since Start')
