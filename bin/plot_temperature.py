@@ -20,7 +20,7 @@ TNORM = 38
 
 FILENAME = os.path.expanduser('~/.temperature.xenon.log')
 SEP = ' | '
-YR = [15,60]
+YR = [5,60]
 TNORM = 25
 
 def read_temps(filename=FILENAME):
@@ -81,17 +81,11 @@ def get_continuum(dates, x, y, delta=2):
     n = np.min(t)
     tmp = np.array(out)
     ii = np.where(tmp > 0)
-    f = interpolate.UnivariateSpline(date2num(dates[ii])-n,tmp[ii], s=4)
-    return f(t-n)
+    f = interpolate.UnivariateSpline(date2num(dates[ii])-n,tmp[ii], s=3)
+    out = f(t-n)
+    return out
     
-    
-    # print out
-    # raise ValueError()
-    tmp = np.array(out)
-    ii = np.where(tmp > 0)
-    
-    f = interpolate.interp1d(date2num(dates[ii]), tmp[ii], bounds_error=False)
-    return f(date2num(dates))
+
     
 def plot_weather(mindate):
     weatherfile = os.path.expanduser('~/data/weather.json')
