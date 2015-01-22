@@ -35,7 +35,7 @@ except:
     data = {}
 
 try:
-    for i in range(1,10):
+    for i in range(1,30):
         print i
         d = '{0.year}{0.month:02d}{0.day:02d}'.format(date-timedelta(days=i))
         tmp = get_weather(d)
